@@ -1,0 +1,1681 @@
+Component selector
+----------------------
+It is not limited to tag but attribute, class can also be used. But can not used id selector
+
+Ex:
+selector: 'app-server'
+selector: ['app-server']
+selector: '.app-server'
+
+Data Binding
+-------------
+Type script code to template : []
+template to type script code: ()  Event listening 
+
+combination of both two way data binding
+( [(ngModel)] = "data" )
+
+string interpolation:
+{{ 'Server' }}
+{{ serverId }}
+any expression that can convert to string, can be method also that return string
+
+property binding:
+<button [disabled] = "!allowNewServer"> </button>
+
+Event binding:
+(click) = "onServerCreated()"
+to pass parameter can use $event
+
+ex: (click) = "onServerCreated($event)" 
+
+Two way data binding:
+[(ngModel)] = "serverName"
+
+ 
+Directives
+-------------
+Directive are instruction in DOM.
+ngIf to output data conditionally
+Structure Directive are those directive that change structure of DOM
+
+ex: ngIf, it should be used prefix with *, like *ngIf
+ex: *ngIf = "serverCreated", any thing that return boolean value. can be method also
+
+Style element dynamically using ngStyle
+-------------------
+ngStyle is attribute directive, which accept javascript object
+ex: <p [ngStyle]: "{backgroundColor: getColor()}"> {{server}} with id {{serverId}} is {{getServerStatus()}} </p>
+ 
+
+ngClass will add some css class if certain condition is true
+-------------------
+it accept javascript object, where key will be className and value will be condition based on which it will be added
+
+ex:
+<p
+	[ngStyle] = "{backgroundColor: getColor()}">
+	[ngClass] = "{online: serverStatus === 'online'}"
+	{{server}} with id {{serverId}} is {{getServerStatus()}}
+</p> 
+
+ngFor is structure directive
+------------------
+ex: <appServer *ngFor = "let server of servers"> </appServer>
+
+
+get index while using ngFor
+ex:
+<div *ngFor = "let logItem of logs; let i = index" >
+    {{logItem}}
+</div> 
+
+here i will be look index.
+
+
+Augury
+--------
+Show angular structure at run time
+ 
+
+Component and databinding deep
+-------------------------------
+Pass data from parent to child using decorator @Input
+In component class use it like
+
+@Input('srvElement') element: {type: string, name:string, content: string}
+here srvElement is name which data will be passed from parent to child
+
+In parent templete it will be
+<app-server-element [srvElement] = "serverElement" >
+</app-server-element>
+
+Passing data from child to parent using event
+----------------------
+Parent template code
+<app-cockpit (serverCreated) = "onServerAdded($event)" (bluePrintCreated) = "onBlueprintAdded($event)>
+</app-cockpit>
+
+there will be method on parent component named "onServerAdded" and "onBlueprintAdded"
+
+In child component below code will be added
+@Output() serverCreated = new EventEmitter<{serverName: string, serverContent: string}>();
+
+here in EventEmitter we are setting data that will be emit in event
+
+Also there will be method as below
+onServerAdded(){
+    this.serverCreated.emit({
+		serverName: this.newServerName,
+		serverContent: this.newServerContent
+	});
+}
+ 
+We can assign alias to output using
+@Output('bpCreated') as use same name in parent html
+
+View encapsulation
+--------------------
+While we apply css to component it only apply to html belongs to that component
+ex:
+p{
+    width: 100%;
+}
+
+reason is angular by default add some attribute to html element. And class will be changed to
+p [angular element]{
+    width: 100%;
+}
+
+default behavior can be changed using key named "encapsulation" in decorator
+there is three posible values
+encapsulation: ViewEncapsulation.Emulated (default behavior)
+encapsulation: ViewEncapsulation.None (to apply css to entire page)
+encapsulation: ViewEncapsulation.Native (same will work as Emulated, but will use shadow DOM)
+
+Using local References in Template
+---------------------------------
+1) local reference can be made for any HTMl element.
+2) It can use any where only in template but not on type script code.
+Ex:
+<input type = "text" class = "form-control" #serverNameInput>
+<button (click) = "onAddServer(serverNameInput)"> Add Server </button> 
+
+Getting access to template and DOM using @ViewChild
+--------------------------------------------------
+With ViewChild we can access template or DOM in typescript ?
+Ex:
+@ViewChild('serverContentInput') serverContentInput: ElementRef;
+here serverContentInput is passed as sting and it will refer to html element with #serverContentInput
+We can also pass component in ViewChild (without string) that will refer to first child component
+ 
+
+Projecting content into components with ng-content
+-------------------------------------------------
+Note: Any content that is added between opening and closing custom component tag will be lost.
+In child component we can use <ng-content> </ng-content>, it will work as hook and in parent component we can pass any html inside opening and closing tag
+of custom component.
+
+
+Component lifecycle
+-------------------
+TBD
+
+Directive deep dive
+-------------------
+1) In a element we can't add more than 1 structure directives.
+
+Create a basic attribute directive
+----------------------------------
+import {Driective, ElementRef, OnInit} from '@angular/core';
+
+@Directive({
+    selector: '[appBasicHighLight]'
+})
+export class AppBasicHighLight{
+	constructor(private elementRef: ElementRef){
+
+	}               
+
+	ngOnInit(){
+		this.elementRef.nativeElement.style.backgroundColor = "green";
+	}
+}
+
+Also make sure to add AppBasicHighLight in module.js
+here "private elementRef:ElementRef" will declare variable in class
+
+Using the renderer to build better attribute directive
+
+import {Driective, ElementRef, OnInit, Renderer2} from '@angular/core';
+@Directive({
+    selector: '[appBasicHighLight]'
+})
+
+export class AppBasicHighLight{
+	constructor(private elRef: ElementRef,private renderer: Renderer2){
+
+	}               
+
+	ngOnInit(){
+		this.renderer.setStyle(this.elRef.nativeElement, 'background-color', 'blue');
+
+	}
+}
+
+
+Using HostListener to Listen to host events 
+----------------------
+import {Driective, ElementRef, OnInit, Renderer2} from '@angular/core';
+
+@Directive({
+    selector: '[appBasicHighLight]'
+})
+
+export class AppBasicHighLight{
+	constructor(private elRef: ElementRef,private renderer: Renderer2){
+
+	}               
+
+	ngOnInit(){
+		this.renderer.setStyle(this.elRef.nativeElement, 'background-color', 'blue');
+
+	}               
+
+	@HostListener('mouseenter') mouseover(eventData: Event){
+		this.renderer.setStyle(this.elRef.nativeElement, 'background-color', 'blue');
+
+	}               
+
+	@HostListener('mouseleave') mouseleave(eventData: Event){
+		this.renderer.setStyle(this.elRef.nativeElement, 'background-color', 'transparent');
+
+	}
+} 
+
+Using HostBinding to bind to host properties
+-------------------------------
+export class AppBasicHighLight{
+
+	@HostBinding('style.backgroundColor') backgroundColor:string = 'transparent';
+
+	constructor(private elRef: ElementRef,private renderer: Renderer2){
+
+	}               
+
+	@HostListener('mouseenter') mouseover(eventData: Event){
+		this.backgroundColor = 'blue';
+	}              
+
+	@HostListener('mouseleave') mouseleave(eventData: Event){
+		this.backgroundColor = 'transparent';
+	}
+}
+
+
+Binding to directive properties
+-------------------------
+export class AppBasicHighLight{
+
+	@Input() defaultColor:string = 'transparent';
+
+	@Input() highlightColor:string = 'blue'; 
+
+	@HostBinding('style.backgroundColor') backgroundColor:string = 'transparent';
+
+	constructor(private elRef: ElementRef,private renderer: Renderer2){
+
+	}           
+
+	ngOnInit(){
+		this.backgroundColor = this.defaultColor;
+	}              
+
+	@HostListener('mouseenter') mouseover(eventData: Event){
+		this.backgroundColor = this.highlightColor;
+	}              
+
+	@HostListener('mouseleave') mouseleave(eventData: Event){
+		this.backgroundColor = this.defaultColor;
+	}
+} 
+
+passing data in template
+-------------------------
+<p AppBasicHighLight [defaultColor]="'yellow'" [highlightColor]="'red'"> Style me with a better directive </p> 
+
+if Input have same name as directive name then we can use [] in directive itself.
+@Input('AppBasicHighLight') highlightColor:string = 'blue';
+<p [AppBasicHighLight]="'red'" [defaultColor]="'yellow'"> Style me with a better directive </p> 
+
+Input can also be passed without [] in this case there will be no ' (single quote) within " (double quote)
+<p [AppBasicHighLight]="'red'" defaultColor="yellow"> Style me with a better directive </p>
+
+ 
+Building a Structural directive
+------------------------------
+//TBD
+
+Understanding ngSwitch
+---------------------
+<div [ngSwitch]="value">
+	<p *ngSwitchCase="5">Value is 5</p>
+	<p *ngSwitchCase="10">Value is 10</p>
+	<p *ngSwitchCase="100">Value is 100</p>
+	<p *ngSwitchDefault>Value is default</p>
+</div> 
+
+Using Services and Dependency Injection
+---------------------------------------
+service is just normal type script class. No decorator are used while creating service class.
+
+Service
+-----------
+Service is just typescript class without no decorator.
+
+Injecting the logging service to component
+---------------------
+1) In contructor of component pass service class as parameter
+ex:
+constructor(private loggingService:LoggingService){
+}
+//Note: here type of service is important, like LoggingService
+
+2) In @component decorator add below entry
+@component({
+	providers: [LoggingService]
+})
+
+Understanding the hierarchical Injector
+-------------------------------------
+1) If we provide service at component then that component and all it's child component will receive same instance of service.
+2) If we provide service at AppComponent, same instance will be shared in all component, directive and other services.
+
+Injecting services into services
+------------------------------
+1) Provider should be at AppModule.
+2) Pass child service in parent service constructor
+3) Add @Injectable() to parent service, it means that you want to use a service within service.
+
+ex:
+import {Injectable} from '@angular/core';
+import {LoggingService} from './logging.service';
+
+@Injectable()
+export class AccountsService(){
+	accounts : [
+		{
+			name: 'Master accounts',
+			status: 'active'
+		}
+	]
+
+	constructor(private loggingService: LoggingService){
+	
+	}
+}
+
+Using services for cross component communication
+-------------------------------------------
+//TBD
+ 
+
+Changing pages with Routing
+---------------------------
+
+import {Routes, RouterModule} from '@angular/router';
+in app.module 
+
+create const variable in app.module with all router
+ex:
+const appRoutes: Routes = [
+	{path: '', conponent: HomeComponent},
+	{path: 'users', conponent: UsersComponent},
+	{path: 'servers', conponent: ServersComponent}
+] 
+
+add 'Routermodule' in app.module imports key
+imports: [
+    RouterModule.forRoot(appRoutes)
+]
+
+In HTML mark placeholder to load curretly selected route it is done by
+<div>
+    <router-outlet></router-outlet>
+</div> 
+
+Note: "router-outlet" is a directive not component.
+
+Navigating with Router Links
+----------------------------
+<a routerLink="/">Home</a>
+<a routerLink="/servers">Servers</a>
+<a [routerLink]="['/users']">Users</a> 
+
+Understanding Navigation Paths
+------------------------------
+with <a routerLink="/servers">Servers</a> will use absolute path, 
+where as <a routerLink="servers">Servers</a> will use relalive path
+
+means if app is curretly on '/server' and if click on link
+<a routerLink="servers">Servers</a> it will navigate to '/servers/servers' 
+
+where as with
+<a routerLink="/servers">Servers</a> will navigate to '/servers'
+
+we can also use '../servers' to go one level up and then add '/servers'
+ 
+
+Styling Active router Links
+--------------------------
+<li routerLinkActive="active"><a routerLink="/">Home</a></li>
+<li routerLinkActive="active"><a routerLink="/servers">Servers</a></li> 
+
+this will apply active class to selected router link
+if we select "/servers" then Home and Servers on both li active class will be apply because "/" is also contains on "/servers" 
+
+Solution is:
+<li routerLinkActive="active"
+    [routerLinkActiveOptions] = "{exact: true}">
+    <a routerLink="/">Home</a>
+</li> 
+
+Navigating Progammatically
+-------------------------
+In component
+
+import {Router} from '@angular/router' 
+
+in constructor inject router
+constructor(private router: Router){} 
+
+//method for programmtically navigate
+onLoadServers(){
+    this.route.navigate(['/servers']);
+} 
+
+Using relative path in programmtically navigation
+------------------------------------------------
+To get Currently activated route in component 
+
+import {ActivatedRoute} from '@angular/router';
+
+Inject in constructor
+
+constructor(private router: Router, private route:ActivatedRoute){
+
+} 
+
+onReload(){
+    this.router.navigate(['server'], {relativeTo: this.route});
+} 
+
+Passing Parameters to Routes
+---------------------------
+
+In app.module use
+const appRoutes: Routes = [
+	{path: '', conponent: HomeComponent},
+	{path: 'users', conponent: UsersComponent},
+	{path: 'users/:id', conponent: UserComponent},
+	{path: 'servers', conponent: ServersComponent}
+] 
+
+here :id means some dynamic value will come here 
+
+Fetching Route Parameters
+-----------------------
+export class UserComponent implements onInit{
+
+	user: {id; number, name:string};               
+
+	constructor(private route: ActivatedRoute){               
+
+	}              
+
+	ngOnInit(){
+		this.user = {
+						id: this.route.snapshot.params['id'],
+						name: this.route.snapshot.params['name']
+		}
+	}
+} 
+
+Fetching Route Parameters reactively
+-----------------------------------
+
+<p>User with id {{user.id}}</p>
+<p>User name is {{user.name}}</p> 
+
+<a [routerLink] = "['/users', 10, 'Anna']">Load Anna (10)</a> 
+
+If we are on user component and click on above link, nativagation path will chnages on browser address bar but component will not reload as we are on same component
+angular does not reload component if routerLink point to same component to resolve this we have to add observable in ngOnInit
+
+ngOnInit(){
+	this.user = {
+		id: this.route.snapshot.params['id'],
+		name: this.route.snapshot.params['name']
+	}              
+
+	this.route.params
+		.subscribe(
+						(params: Params) => {
+										this.user.id = params['id'];
+										this.user.name = params['name']
+						}
+		);
+} 
+
+here this.route.params is observable
+ 
+
+Passing Query Parameters and Fragments
+-------------------------------------
+Ex:
+In app.module use
+const appRoutes: Routes = [
+    {path: 'servers/:id/edit', conponent: EditServerComponent}
+] 
+
+Passing query params from template
+---------------------------------
+<a
+	[routerLink] = "['/servers', 5, 'edit']"
+	[queryParams] = "[{allowEdit: 1}]",
+	fragment = "loading"> 
+</a> 
+
+routerLink is directive here, where as queryParams and fragment are property of routerLink. 
+
+Passing queryParams from programatically
+--------------------------------------
+onLoadServer(id:number){
+	this.route.navigate(['/server', id, 'edit'], {
+		queryParams: {
+						allowEdit: 1
+		},
+		fragment: 'loading'
+	});
+} 
+
+Retrieving Query Parameters and Fragments
+----------------------------------------
+constructor(private route: ActivatedRoute){
+	console.log(this.route.snapshot.queryParams);
+	console.log(this.route.snapshot.fragment);               
+
+	this.route.queryParams.subscribe();
+	this.route.fragment,subscribe();
+} 
+
+Note: params['id'] allways return string 
+
+Setting up child(Nested) routes
+------------------------------
+In app.module use
+const appRoutes: Routes = [
+	{path: '', conponent: HomeComponent},
+	{path: 'users', conponent: UsersComponent, children: [
+		{path: ':id', conponent: UserComponent}
+	]},
+	{path: 'servers', conponent: ServersComponent, children: [
+		{path: ':id', conponent: ServerComponent},
+		{path: ':id/edit', conponent: EditServerComponent}
+	]}
+] 
+
+Note: Since we are using childRoute here, so there must be <router-outlet>
+in child element where subChild component will be rendered. 
+
+Configurating the handling of query params
+-----------------------------------------
+To use old queryParams while navigating to new path can use
+queryParamsHandling: 'preserve' 
+
+possible value:
+preserve: to preserve old queryParams
+merge: to merge old queryParams with new queryParams 
+
+ex:
+this.route.navigate(['edit']. {
+	relativeTo: this.route,
+	queryParamsHandling: 'preserve'
+});
+
+Redirecting and Wildcard Routes
+------------------------------
+const appRoutes: Routes = [
+	{path: '', conponent: HomeComponent},
+	{path: 'servers', conponent: ServersComponent, children: [
+					{path: ':id', conponent: ServerComponent},
+					{path: ':id/edit', conponent: EditServerComponent}
+	]},
+	{path: 'not-found', compoment: PageNotFoundComponent},
+	{path: 'something', redirectTo: '/not-found'}
+] 
+
+here when ever path is '/something' to will redirect to 'not-found' path.
+{path: '**', redirectTo: '/not-found'}
+'**' will handle all route for which path is not defined. Order here is important and it should be last route. 
+
+Outsourcing the Route Configuration
+----------------------------------
+If there are lots of path we can create new module for routing.
+Ex:
+const appRoutes: Routes = [
+	{path: '', conponent: HomeComponent},
+	{path: 'servers', conponent: ServersComponent, children: [
+					{path: ':id', conponent: ServerComponent},
+					{path: ':id/edit', conponent: EditServerComponent}
+	]},
+	{path: 'not-found', compoment: PageNotFoundComponent},
+	{path: 'something', redirectTo: '/not-found'}
+] 
+
+@ngModule({
+	imports: [
+		RouterModule.forRoot(appRoutes),
+		exports: [RouterModule]
+	]
+})
+
+export class AppRoutingModule{               
+
+} 
+
+exports means that if some other module import this module what all will be accessible to module.
+In app module now import AppRoutingModule 
+
+Protecting Routes with canActivate
+---------------------------------
+Activation can be done based on service that implement canActivate method which return either observable/promise/boolean.
+Here observable promise will resolve to boolean. 
+
+ex:
+import {
+	canActivate,
+	ActivatedRouteSnapshot,
+	RouterStateSnapshot
+} from '@angular/router';
+
+import {observable} from 'rxjs/Observable';
+import {AuthService} from './auth.service'; 
+
+@Injectable()
+export class AuthGuard implement canActivate{
+
+	canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean												  
+		return this.authService.isAuthenticated()
+			.then(
+				(authenticated: boolean) => {
+					if(authenticated){
+									return true;
+					}else {
+									this.route.navigate(['/']);
+					}
+				}
+			);
+} 
+
+here AuthService is again service that is internally used by AuthGuard to check authentication.
+
+In AppRoutingModule below update is done for authentication.
+const appRoutes: Routes = [
+	{path: '', conponent: HomeComponent},
+	{path: 'servers', conponent: ServersComponent, canActivate:[AuthGuard] children: [
+					{path: ':id', conponent: ServerComponent},
+					{path: ':id/edit', conponent: EditServerComponent}
+	]},
+	{path: 'not-found', compoment: PageNotFoundComponent},
+	{path: 'something', redirectTo: '/not-found'}
+] 
+
+Protecting child routes with canActivateChild method
+---------------------------------------------------
+For protecting child either we have to add canChild in each child path. Or alternatively we can also add canActivateChild at parent path
+here instead of canActivate interface we have to implements canActivateChild method 
+
+Other parameter and return types are same as canActivate. 
+
+Controlling Navigation with canDeactivate
+----------------------------------------
+ex:
+import {Observable} from 'rxjs/Observable';
+import {canDeactivate, ActivatedRouteSnapshot, RouterStateSnapshot} from '@angular/route';
+
+export imterface CanComponentDeactivated {
+	canDeactivate: () => Observable<boolean> | Promise<boolean> | boolean
+}
+
+export class CanDeactivateGuard implements CanDeactivate<CanComponentDeactivate> {
+
+	canDeactivate(component: CanComponentDeactivate,
+				  currentRoute: ActivatedRouteSnapshot,
+				  currentState: RouterStateSnapshot,
+				  nextState?: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | 
+	boolean {
+		return component.canDeactivate();
+	}
+}
+
+here in CanDeactivate<CanComponentDeactivate> passing component that is implemented canDeactivate method.
+
+We are calling canDeactivate method of service as well as of compoment.
+const appRoutes: Routes = [
+	{path: '', conponent: HomeComponent},
+	{path: 'servers', conponent: ServersComponent, canActivate:[AuthGuard] children: [
+		{path: ':id', conponent: ServerComponent},
+		{path: ':id/edit', conponent: EditServerComponent, canDeactivate: [canDeactivateGuard]}
+	]},
+	{path: 'not-found', compoment: PageNotFoundComponent},
+	{path: 'something', redirectTo: '/not-found'}
+]
+
+In module provide CanDeactivateGuard
+ex: 
+providers: [ServersService, AuthService, AuthGuard, CanDeactivateGuard]
+
+In edit server compoment implement CanComponentDeactivate interface
+ex:
+canDeactivate(): Observable<boolean> | Promise<boolean> | boolean {
+	//return boolean;
+}
+
+Passing static data to Route
+---------------------------
+In route we can define as
+{path: 'not-found', component: ErrorPageComponent, data: {message: 'Page not found!'}}
+
+In type script code we can access that data
+
+ngOnInit(){
+	this.errorMessage = this.route.snapshot.data['message'];
+	this.route.data.subscribe(
+		(data: data) => {
+			this.errorMessage = data['message'];
+		}
+	);
+}
+
+Resolving Dynamic data with the resolve Guard
+--------------------------------------------
+On Edit some document, like edit server with servers if someone need to fecth some data from back-end that will be consumed by application then we can use Resolve service.
+
+Difference between canActivate and resolve is canActivate will decide that route will load or not. Where as in Resolve service route will load after prefatching some data.
+
+Here we will create a service which implements Resolve interface
+
+import {Resolve, ActivatedRouteSnapshot, RouterStateSnapshot} from '@angular/router';
+import {Observable} from 'rxjs/Observable';
+import {Injectable} from '../servers.service';
+
+interface Server {
+	id: number;
+	name: string;
+	status: string;
+}
+
+@Injectable()
+export class ServerResolver implements Resolve<Server> {
+	constructor(private serverService: ServerService){}
+	
+	resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Server> | Promise<Server> | Server {
+		return this.serverService.getServer(+route.params['id']);
+	}
+}
+
+In Routes path will be
+{path: 'servers', conponent: ServersComponent, canActivate:[AuthGuard] children: [
+		{path: ':id', conponent: ServerComponent, resolve: {server: ServerResolver} },
+		{path: ':id/edit', conponent: EditServerComponent, canDeactivate: [canDeactivateGuard]}
+	]}
+
+In type script code now we can access server object like below.
+ex:
+ngOnInit(){
+	this.route.data.
+		subscribe(
+			(data: Data) => {
+				this.server = data['server'];
+			}
+		)
+}
+
+Understanding Location Strategies
+--------------------------------
+TBD
+
+
+Understanding Observables
+------------------------
+Observable are object imported from rxjs. It has observable pattern. There is Observable and observer.
+
+Observable could emit data due to various source ex. it may be connected to button, Http request or trigger in code.
+
+Observer is user code that subscribe observable.
+There are three way to handle data.
+1) Handle data (ex button click)
+2) Handle error
+3) Handle completion (like HttpRequest)
+
+Analyzing Angular Observables
+----------------------------
+
+Building a custom Observable
+---------------------------
+ex:
+ngOnInit() {
+    const customIntervalObservable = Observable.create(observer => {
+      let count = 0;
+      setInterval(() => {
+        observer.next(count);
+        if (count === 5) {
+          observer.complete();
+        }
+        if (count > 3) {
+          observer.error(new Error('Count is greater 3!'));
+        }
+        count++;
+      }, 1000);
+    });
+
+    this.firstObsSubscription = customIntervalObservable.subscribe(data => {
+      console.log(data);
+    }, error => {
+      console.log(error);
+      alert(error.message);
+    }, () => {
+      console.log('Completed!');
+    });
+}
+
+Understanding Operator
+---------------------
+Operator coming between Observable and Observer. Here we can transform data before passing to subscribe method.
+
+
+import { map, filter } from 'rxjs/operators';
+
+this.firstObsSubscription = customIntervalObservable.pipe(filter(data => {
+      return data > 0;
+    }), map((data: number) => {
+      return 'Round: ' + (data + 1);
+    })).subscribe(data => {
+      console.log(data);
+    }, error => {
+      console.log(error);
+      alert(error.message);
+    }, () => {
+      console.log('Completed!');
+    });
+
+
+Subject
+------
+TBD
+
+Handling forms in angular Apps
+-----------------------------
+Angular offers two approach to handle http forms
+1) Template-Driven approach: Angular infers the Form Object from the DOM
+2) Reactive: Form is created programatically and synchronized with the DOM
+
+An example form
+--------------
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <form>
+        <div id="user-data">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" class="form-control">
+          </div>
+          <button class="btn btn-default" type="button">Suggest an Username</button>
+          <div class="form-group">
+            <label for="email">Mail</label>
+            <input type="email" id="email" class="form-control">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="secret">Secret Questions</label>
+          <select id="secret" class="form-control">
+            <option value="pet">Your first Pet?</option>
+            <option value="teacher">Your first teacher?</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" type="submit">Submit</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+Creating the forms and Registering the Controls
+----------------------------------------------
+Make sure to import Forms module in app module
+
+import {FormsModule} from '@angular/forms'
+
+<input type="text" 
+	id="username" 
+	class="form-control"
+	ngModel
+	name = "username">
+	
+here ngModel inform angular that it is control in form. Name attribute is required here as same will be used in javascript representation of form.
+
+
+Submitting and Using the Forms
+-----------------------------
+For submitting form angular have build in directive name ngSubmit
+ngSubmit give event that we can use in type script.
+
+<form (ngSubmit)="onSubmit()">
+</form>
+
+To get form control values
+-------------------------
+<form (ngSubmit)="onSubmit(f) #f="ngForm">
+
+This code will give javascript object of form.
+
+onSubmit(form: NgForm){
+
+}
+
+Understanding Form State
+-----------------------
+
+Accessing the Form with @ViewChild
+---------------------------------
+@ViewChild('f') signupForm: ngForm;
+
+onSubmit(){
+console.log(this.signupForm);
+}
+
+Adding Validation to check User Input
+------------------------------------
+email is angular directive
+
+If form is invalid NgForm object valid property will be false.
+
+In control level also there is property valid.
+
+We can also check form validity using class added on form control like ng-dirty, ng-touched, ng-valid
+
+Using the Form State
+-------------------
+Disbaled Submit button if form is not valid
+
+<button
+class="btn btn-primay"
+type="submit"
+[disabled]="!f.valid">Submit</button>
+
+Give css rule is controls are invalid
+
+input.ng-invalid.ng-touched {
+border: 1px solid red;
+}
+
+
+Outputting Validation Error Message
+----------------------------------
+<input
+	type="email"
+	id="email"
+	class="form-control"
+	ngModel
+	name="email"
+	required
+	email
+	#email="ngModel"
+<span class="help-block" *ngIf="email.valid">Please enter a valid email!</span>
+
+
+Set Default Values with ngModel Property Binding
+------------------------------------------------
+We can set using ngModel
+ex:
+<select
+	id="select"
+	class="form-control"
+	[ngModel]="defaultQuestion"
+	name="secret"
+	<option value="pet">Your first Pet?</option>
+	<option value="teacher">Your first teacher?</option>
+</select>
+
+In Type script code have to add property "defaultQuestion"
+
+Using ngModel with Two-Way-Binding
+---------------------------------
+In Angular controls can have two way binding
+<textarea
+	name="questionAnswer"
+	rows=3
+	class="form-control"
+	[(ngModel)]="answer"></textarea>
+<p>Your Reply: {{answer}}</p>
+
+In type script class will add answer variable
+Here when we update textarea <p> will also updated.
+
+
+Grouping Form Controls
+---------------------
+We can group some set of form control in Form value object using ngModelGroup.
+ex:
+<div id="user-data" ngModelGroup="userData">
+
+If we get Form value object then there will be Object with key named "userData" which have property and value for form control in that group.
+
+FormGroup also have form, control like property like valid etc.
+
+We can also get javascript representation of form group.
+ex:
+<div 
+	id="user-data" 
+	ngModelGroup="userData"
+	#userData="ngModelGrup">
+
+Handling Radio Buttons
+---------------------
+ex:
+<div class="radio" *ngFor="let gender of genders">
+	<label>
+		type="radio"
+		name="gender"
+		ngModel
+		[value]="gender"
+		{{gender}}
+	</label>
+</div>
+
+where genders is array in typescript class.
+
+Setting and Patching Form Values
+-------------------------------
+Form control value can be polulated using setValue method of NgForm.
+ex:
+@ViewChild('f') signupForm: NgForm;
+
+suggestedUserName(){
+const suggestedUserName = 'Superuser';
+
+this.signupForm.setValue({
+	userData: {
+		userName: suggestedUserName,
+		email: ''
+	},
+	secret: 'pet',
+	questionAnswer: '',
+	gender: 'male'
+	});
+}
+
+with above method it will override all controls value.
+
+To update individual control can use patchValue method.
+ex:
+this.signupForm.form.patchValue({
+	userData:{
+		username: suggestedUserName
+	}
+});
+
+
+Using Form Data
+--------------
+We can use FormData to display details view on form submit.
+
+
+Resetting Forms
+--------------
+We can reset form using Form javascript object reset method.
+ex:
+this.signupForm.reset();
+
+This method not only reset value of control but also reset to initial state like touched, dirty etc.
+
+
+Introduction to the Reactive Approach
+------------------------------------
+Form is created programatically and sychronised with the DOM.
+
+Reative: Setup
+-------------
+In typescript code we will create a variable that will reference form and type will be FormGroup
+ex:
+
+import {FormGroup} from '@angular/forms';
+
+signupForm: FormGroup;
+
+For Reactive approach we need to import ReactiveFormModule in app.module
+ex:
+import {ReactiveFormModule} from '@angular/forms';
+
+imports: [
+	BrowserModule,
+	HttpModule,
+	ReactiveFormModule
+]
+
+Reactive: Creating a Form in Code
+--------------------------------
+Html:
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <form>
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="email">email</label>
+          <input
+            type="text"
+            id="email"
+            class="form-control">
+        </div>
+        <div class="radio" *ngFor="let gender of genders">
+          <label>
+            <input
+              type="radio"
+              [value]="gender">{{ gender }}
+          </label>
+        </div>
+        <button class="btn btn-primary" type="submit">Submit</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+Typescript code:
+
+ngOnInit(){
+this.signupForm = new FormGroup({
+	'username': new FormControl(null), //first argument is state, 2nd is single	or array of validator, 3rd is sync validator
+	'email': new FormControl(null),
+	'gender': new FormControl('male')
+});
+}
+
+Here in key single quote is used, so that field name is same on minification code.
+
+Reactive: Syncing HTML and Form
+------------------------------
+1) In template form add formGroup directive via property
+<form [formGroup]="signupForm">
+2) In formControl add formControlName directive to tell angular what name of control
+<input
+        type="text"
+        id="email"
+		formControlName="username"
+        class="form-control">
+
+We can also use property binding like
+<input
+        type="text"
+        id="email"
+        [formControlName]="'username'"
+class="form-control">	
+
+
+Reactive: Submitting the Form
+----------------------------
+<form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+
+We don't need to pass form object from here, as type script code have already form object.
+
+
+Reactive: Adding Validation
+--------------------------
+ngOnInit(){
+this.signupForm = new FormGroup({
+	'username': new FormControl(null, Validators.required),
+	'email': new FormControl(null, [Validators.required, validators.email]),
+	'gender': new FormControl('male')
+});
+}
+
+Reactive: Getting Access to Controls
+-----------------------------------
+<input
+        type="text"
+        id="email"
+formControlName="username"
+        class="form-control">
+<span
+*ngIf="signupForm.get('username').valid && signupForm.get('username').touched" //in get method we can pass control name or path
+class="help-block">Please enter a valid username!</span>
+
+
+Reactive: Grouping Controls
+--------------------------
+In Typescript:
+ngOnInit(){
+	this.signupForm = new FormGroup({
+		'userData': new FormGroup({
+		'username': new FormControl(null, Validators.required),
+		'email': new FormControl(null, [Validators.required, validators.email])
+	}),
+	'gender': new FormControl('male')
+});
+}
+
+In Html:
+<div formGroupName="userData">
+<input
+        type="text"
+        id="email"
+formControlName="username"
+        class="form-control">
+<span
+*ngIf="signupForm.get('userData.username').valid && signupForm.get('userData.username').touched"
+class="help-block">Please enter a valid username!</span>
+</div>
+
+
+Reactive: Arrays of Form Controls (FormArray)
+--------------------------------------------
+<div formArrayName="hobbies">
+	<h4>Your Hobbies</h4>
+	<button>
+		class="btn btn-default"
+		type="button"
+		(click)="OnAddHobby()">Add Hobby</button>
+		<div
+			class="btn btn-default"
+			type="button"
+			*ngFor="let hobbyControl of signupForm.get('hobbies').control; let i = index">
+	<input type="text" class="form-control" [formControlName]="i">
+</div>
+
+In typescript:
+
+ngOnInit(){
+this.signupForm = new FormGroup({
+		'userData': new FormGroup({
+		'username': new FormControl(null, Validators.required),
+		'email': new FormControl(null, [Validators.required, validators.email])
+	}),
+	'gender': new FormControl('male'),
+	'hobbies': new FormArray([])
+	});
+}
+
+onAddHobby(){
+	const control = new formControl(null, Validators.required);
+	(<FormArray>this.signupForm.get('hobbies')).push(control);
+}
+
+
+Reactive: Creating Custom Validators
+-----------------------------------
+A validator is a function that accept form control. It should return object with key as string and value as boolean.
+
+forbiddenNames(control: FormControl): {[s: string]: boolean}{
+	if(this.forbiddenUsernames.indexOf(control.value) !== -1){
+		return {nameIsForbidden: true};
+	}
+	
+	return null;
+}
+
+if validation is successful method should return null;
+
+
+//add forbiddenNames in validators array
+this.signupForm = new FormGroup({
+		'userData': new FormGroup({
+		'username': new FormControl(null, Validators.required, this.forbiddenNames.bind(this)),
+		'email': new FormControl(null, [Validators.required, validators.email])
+	}),
+	'gender': new FormControl('male'),
+	'hobbies': new FormArray([])
+	});
+}
+
+Reactive: Using Error Codes
+--------------------------
+ex:
+<span
+	*ngIf="signupForm.get('userData.username').error['nameIsForbidden']">This name is invalid!</span>
+<span
+	*ngIf="signupForm.get('userData.username').error['required']">This name is required!</span>
+	
+	
+Reactive: Creating a Custom Async Validators
+-------------------------------------------
+ex:
+forbiddenEmails(control: FormControl): Promise<any> | Observable<any> {
+	const promise = new Promise<any>((resolve, reject) => {
+		setTimeout(() => {
+			if(control.value === 'test@test.com'){
+				resolve({'emailIsForbidden': true});
+			}else {
+				resolve(null);
+			}
+		},1500);
+	});
+}
+
+this.signupForm = new FormGroup({
+		'userData': new FormGroup({
+		'username': new FormControl(null, Validators.required, this.forbiddenNames.bind(this)),
+		'email': new FormControl(null, [Validators.required, validators.email], this.forbiddenEmails)
+	}),
+	'gender': new FormControl('male'),
+	'hobbies': new FormArray([])
+	});
+}
+
+
+Reactive: Reacting to Status or Value Changes
+--------------------------------------------
+ngOnInit(){
+	this.signupForm = new FormGroup({
+			'userData': new FormGroup({
+			'username': new FormControl(null, Validators.required),
+			'email': new FormControl(null, [Validators.required, validators.email])
+		}),
+		'gender': new FormControl('male'),
+		'hobbies': new FormArray([])
+	});
+	
+	//will notify on value change
+	this.signupForm.valueChanges.subscribe(
+		(value) => console.log(value);
+	);
+	
+	this.signupForm.statusChanges.subscribe(
+		(status) => console.log(status);//valid/invalid/pending
+	);	
+}
+
+Reactive: Setting and Patching Values
+------------------------------------
+ex:
+this.signupForm.setValue();
+
+this.signupForm.patchValue();
+
+this.signupForm.reset();
+
+
+Using Pipes to Transform Output
+------------------------------
+TBD
+
+Making Http Requests
+-------------------
+
+Sending a Post Request
+---------------------
+1) import {HttpClientModule} form '@angular/common/http';
+
+imports: [HttpClientModule]
+
+2) In typescript code
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent implements OnInit {
+  loadedPosts = [];
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit() {}
+
+  onCreatePost(postData: { title: string; content: string }) {
+    // Send Http request
+    this.http
+      .post(
+        'https://ng-complete-guide-c56d3.firebaseio.com/posts.json',
+        postData
+      )
+      .subscribe(responseData => {
+        console.log(responseData);
+      });
+  }
+
+  onFetchPosts() {
+    // Send Http request
+  }
+
+  onClearPosts() {
+    // Send Http request
+  }
+}
+TBD: How to aviod call with Http method Options
+
+
+
+Getting Data
+-----------
+Type script code
+---------------
+private fetchPosts(){
+	this.http.get(https://ng-complete-guide-c56d3.firebaseio.com/posts.json)
+		.subscribe(posts => {
+			console.log(posts);
+		});
+	)
+}
+
+
+Using RxJs Operators to Transform Response Data
+----------------------------------------------
+import {map} from rxjs/operators;
+
+private fetchPosts(){
+	this.http.get(https://ng-complete-guide-c56d3.firebaseio.com/posts.json)
+		.pipe(map(responseData => {
+			const postsArray = [];
+			for(const key in responseData){
+				if(responseData.hasOwnProperty(key)){
+					postArray.push({ ...responseData[key], id:key});
+				}				
+			}
+		}))
+		.subscribe(posts => {
+			console.log(posts);
+		});
+	)
+}
+
+
+Using Types with HttpClients
+---------------------------
+export interface Post {
+	title: string;
+	content: string;
+	id?: string;
+}
+
+onCreatePost(postData: Post) {
+	...
+}
+
+.pipe(map((responseData: { [key:string]: Post}) => {
+	const postsArray: Post[] = [];
+	...
+}
+
+Other way
+this.http
+	.get<{ [key: string]: Post}>(https://ng-complete-guide-c56d3.firebaseio.com/posts.json).
+	pipe(
+	 ...
+	)
+
+
+Using a Service for Http Request
+-------------------------------
+TBD
+
+
+Sending a Delete Request
+-----------------------
+deletePosts(){
+	return this.http.delete('https://ng-complete-guide-c56d3.firebaseio.com/posts.json');
+}
+
+
+Handling Errors
+--------------
+this.postsService.fetchPosts().subscribe(posts => {
+	this.isFetching = false;
+	this.loadingPosts = posts;
+}, error => {
+	this.error = error.message;
+	console.log(error);
+});
+
+
+Using Subjects For Error Handling
+--------------------------------
+TBD
+
+Using the catchError Operator
+-----------------------------
+private fetchPosts(){
+	this.http.get(https://ng-complete-guide-c56d3.firebaseio.com/posts.json)
+		.pipe(map(responseData => {
+			const postsArray = [];
+			for(const key in responseData){
+				if(responseData.hasOwnProperty(key)){
+					postArray.push({ ...responseData[key], id:key});
+				}				
+			}
+		}))
+		.catchError(errorRes => {
+			throwError(errorRes);
+		})
+		.subscribe(posts => {
+			console.log(posts);
+		});
+	)
+}
+
+
+Error Handling and UX
+--------------------
+TBD
+
+
+Setting Headers
+--------------
+import HttpHeaders in type script code
+
+this.http.get(
+	https://ng-complete-guide-c56d3.firebaseio.com/posts.json,
+	{
+		headers: new HttpHeaders({ 'Custom-Header': 'Hello' })
+	}	
+)
+
+
+Adding Query Params
+------------------
+const searchParams = new HttpParams();
+searchParams.append('print', 'pretty');
+searchParams.append('custom', 'key');
+
+this.http.get(
+	https://ng-complete-guide-c56d3.firebaseio.com/posts.json,
+	{
+		headers: new HttpHeaders({ 'Custom-Header': 'Hello' }),
+		params: searchParams;
+	}	
+)
+
+
+Observing Different Types of Responses
+-------------------------------------
+this.http
+      .post(
+        'https://ng-complete-guide-c56d3.firebaseio.com/posts.json',
+        postData,
+		{
+			observe: 'response'//we will get complete response object in susbcribe method
+			//'body' response data
+		}
+      )
+      .subscribe(responseData => {
+        console.log(responseData);
+      });
+
+
+deletePosts(){
+	return this.http.delete('
+		https://ng-complete-guide-c56d3.firebaseio.com/posts.json'
+		{
+		observe: 'event'
+		})
+		.pipe(
+			tap(event => {
+				console.log(event);
+				if(event.type === HttpEventType.Sent){
+					// ...
+				}
+				if(event.type === HttpEventType.Response){
+					console.log(event.body);
+				}
+			})
+		);
+}
+
+With observe 'event' and tap operator we can so some code without changing susbcribe response.
+
+
+Changing the Response Body Type
+------------------------------
+this.http
+      .post(
+        'https://ng-complete-guide-c56d3.firebaseio.com/posts.json',
+        postData,
+		{
+			responseType: 'json' //text, blob
+		}
+      )
+      .subscribe(responseData => {
+        console.log(responseData);
+      });
+
+
+Introducing Interceptors
+-----------------------
+To add header/params in all http request we will use interceptor, like for authentication.
+
+auth.interceptor.service.ts
+
+import {HttpInterceptor, HttpRequest, HttpHandler} from '@angular/common/http';
+
+export class AuthInterceptorService implements HttpInterceptor {
+	intercept(req: HttpReuest<any>, next: HttpHandler){
+		console.log('Request is on its way');
+		return next.handle(req);
+	}
+}
+	
+intercept method run before http leave application.
+
+In app module
+
+import {HttpClientModule, HTTP_INTERCEPTORS} from '@angular/common/http';
+
+provides: [{
+	provide: HTTP_INTERCEPTORS, 
+	useClass: AuthInterceptorService, 
+	multi: true
+}]
+
+
+Manipulating Request Objects
+---------------------------
+Req object is immutable and can not be changed.
+
+intercept(req: HttpReuest<any>, next: HttpHandler){
+		console.log('Request is on its way');
+		const modifiedRequest = req.clone({
+			header: req.headers.append('Auth', 'xyz')
+		});
+		
+		return next.handle(modifiedRequest);
+	}
+
+
+Response Interceptors
+--------------------
+intercept(req: HttpReuest<any>, next: HttpHandler){
+		console.log('Request is on its way');
+		const modifiedRequest = req.clone({
+			header: req.headers.append('Auth', 'xyz')
+		});
+		
+		return next.handle(modifiedRequest).pipe(
+			tap(event => {
+				if(event.type === HttpEventType.Response){
+					console.log('Response arrived, body data: ');
+					console.log(event.body);
+				}
+			})
+		);
+}
+
+
+next.handle is Observable that have response
+
+
+Multiple Interceptors
+--------------------
+We can use more than one interceptor in this case order should be maintained in app module.
+ 
+provides: [{
+	provide: HTTP_INTERCEPTORS, 
+	useClass: AuthInterceptorService, 
+	multi: true
+}, {
+	provide: HTTP_INTERCEPTORS, 
+	useClass: LoggingInterceptorService, 
+	multi: true
+}]
+
+
+Authentication & Route Protection in Angular
+-------------------------------------------
