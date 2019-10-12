@@ -1,1 +1,14 @@
-<p>dashboard works!</p>
+<!-- <div>
+    <router-outlet></router-outlet> 
+</div> -->
+
+<table>
+        <tr>
+          <th *ngFor="let c of columns">{{c}}</th>
+        </tr>
+        <!-- <tr *ngFor="let ch of characters" 
+            app-table-row 
+            [character]="ch" 
+            [columns]="columns">
+        </tr> -->
+      </table>

@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 export class AuthService {
     httpClient: HttpClient;
 
-    token: string;
+    token: string = 'abcd';
 
   constructor(private http: HttpClient) { 
     this.httpClient = http;
@@ -20,5 +20,11 @@ export class AuthService {
       });
 
       return login;
+  }
+
+  getBalances(){
+    // let getBalances = this.httpClient.get('ancd.com', {
+    //   'Authorization': this.token;
+    // });
   }
 }
