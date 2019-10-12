@@ -1,14 +1,25 @@
-<!-- <div>
-    <router-outlet></router-outlet> 
-</div> -->
-
-<table>
-        <tr>
-          <th *ngFor="let c of columns">{{c}}</th>
-        </tr>
-        <!-- <tr *ngFor="let ch of characters" 
-            app-table-row 
-            [character]="ch" 
-            [columns]="columns">
-        </tr> -->
-      </table>
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a routerLink="/" class="navbar-brand">Dashboard</a>
+      </div>
+  
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li routerLinkActive="active"><a routerLink="/account">Account</a></li>
+          <li routerLinkActive="active"><a routerLink="/balance">Balance</a></li>
+        </ul>
+        <router-outlet></router-outlet>
+        <!--<ul class="nav navbar-nav navbar-right">
+          <li class="dropdown" appDropdown>
+            <a style="cursor: pointer;" class="dropdown-toggle" role="button">Manage <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a style="cursor: pointer;" (click)="onSaveData()">Save Data</a></li>
+              <li><a style="cursor: pointer;" (click)="onFetchData()">Fetch Data</a></li>
+            </ul>
+          </li>
+        </ul> -->
+      </div>
+    </div>
+  </nav>
+  

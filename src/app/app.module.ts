@@ -12,10 +12,13 @@ import { BalancesComponent } from './balances/balances.component';
 import {AppInterceptor} from './app.interceptor';
 import { CreateComponent } from './account/create/create.component';
 
+
 const appRoutes: Routes = [
   { path: '', redirectTo: '/auth', pathMatch: 'full' },  
   { path: 'auth', component: AuthComponent },
-  { path: 'dashboard', component: DashboardComponent }
+  { path: 'dashboard', component: DashboardComponent },
+  { path: 'account', component: CreateComponent },
+  { path: 'balance', component: BalancesComponent }
 ];
 
 @NgModule({
