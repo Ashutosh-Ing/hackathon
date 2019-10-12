@@ -8,6 +8,7 @@ import { AuthComponent } from './auth/auth.component';
 import { Routes, RouterModule } from '@angular/router';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import {AuthService} from './auth/auth.service';
+import { BalancesComponent } from './balances/balances.component';
 
 const appRoutes: Routes = [
   { path: '', redirectTo: '/auth', pathMatch: 'full' },  
@@ -19,7 +20,8 @@ const appRoutes: Routes = [
   declarations: [
     AppComponent,
     AuthComponent,
-    DashboardComponent
+    DashboardComponent,
+    BalancesComponent
   ],
   imports: [
     RouterModule.forRoot(appRoutes),

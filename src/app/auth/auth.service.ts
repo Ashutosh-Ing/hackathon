@@ -5,6 +5,8 @@ import { HttpClient } from '@angular/common/http';
 export class AuthService {
     httpClient: HttpClient;
 
+    token: string;
+
   constructor(private http: HttpClient) { 
     this.httpClient = http;
   }

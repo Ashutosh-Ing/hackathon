@@ -34,10 +34,10 @@ export class AuthComponent implements OnInit{
     let login = this.authService.login(this.signUpForm.value.username, this.signUpForm.value.password);
     login.subscribe((response) => {
       console.log(response);
+      this.authService.token = response.token;
+      this.router.navigate(['dashboard']);
     }, error => {
       console.log(error);
-    });
-
-    this.router.navigateByUrl('dashboard');
+    });    
   }
 }
