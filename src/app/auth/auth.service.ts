@@ -3,11 +3,20 @@ import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class AuthService {
-  constructor(private http: HttpClient) { 
+    httpClient: HttpClient;
 
+  constructor(private http: HttpClient) { 
+    this.httpClient = http;
   }
 
-  login(){
+  login(userName, password){
       console.log('Auth service Login');
+
+      let login = this.httpClient.post('http://10.117.189.192:8090/login/getToken', {
+          username: userName,
+          password: password
+      });
+
+      return login;
   }
 }

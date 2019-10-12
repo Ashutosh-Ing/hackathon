@@ -31,7 +31,13 @@ export class AuthComponent implements OnInit{
   onSubmit(){
     console.log(this.signUpForm);
 
-    this.authService.login();
+    let login = this.authService.login(this.signUpForm.value.username, this.signUpForm.value.password);
+    login.subscribe((response) => {
+      console.log(response);
+    }, error => {
+      console.log(error);
+    });
+
     this.router.navigateByUrl('dashboard');
   }
 }
