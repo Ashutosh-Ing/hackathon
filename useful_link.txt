@@ -1,0 +1,102 @@
+
+//Add bootstrap
+----------------------
+npm install --save bootstrap@3
+node_modules/bootstrap/dist/css/bootstrap.min.css
+
+The .container class provides a responsive fixed width container
+The .container-fluid class provides a full width container, spanning the entire width of the viewport
+
+Grid Classes
+-----------
+<div class="row">
+  <div class="col-sm-4">.col-sm-4</div>
+  <div class="col-sm-4">.col-sm-4</div>
+  <div class="col-sm-4">.col-sm-4</div>
+</div>
+
+Add ag-grid
+----------------------
+npm install --save ag-grid-community ag-grid-angular
+
+In app.module
+------------
+import { AgGridModule } from 'ag-grid-angular';
+
+imports: AgGridModule.withComponents([])
+
+css
+--------
+"node_modules/ag-grid-community/dist/styles/ag-grid.css",
+"node_modules/ag-grid-community/dist/styles/ag-theme-balham.css"
+
+Typescript code
+--------------
+columnDefs = [
+        {headerName: 'Make', field: 'make', sortable: true },
+        {headerName: 'Model', field: 'model' },
+        {headerName: 'Price', field: 'price'}
+    ];
+
+    rowData = [
+        { make: 'Toyota', model: 'Celica', price: 35000 },
+        { make: 'Ford', model: 'Mondeo', price: 32000 },
+        { make: 'Porsche', model: 'Boxter', price: 72000 }
+    ];
+
+Html
+-------------	
+<ag-grid-angular 
+    style="width: 500px; height: 500px;" 
+    class="ag-theme-balham"
+    [rowData]="rowData" 
+    [columnDefs]="columnDefs"
+    >
+</ag-grid-angular>
+
+https://www.ag-grid.com/angular-getting-started/#add-ag-grid-to-your-project
+
+Session Storage
+--------------
+
+
+Toast Message
+------------
+npm install ngx-toastr --save
+npm install @angular/animations --save
+
+node_modules/ngx-toastr/toastr.css
+
+import { CommonModule } from '@angular/common';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+ 
+import { ToastrModule } from 'ngx-toastr';
+
+imports: [
+    CommonModule,
+    BrowserAnimationsModule, // required animations module
+    ToastrModule.forRoot() // ToastrModule added
+],
+
+import { ToastrService } from 'ngx-toastr';
+ 
+@Component({...})
+export class YourComponent {
+  constructor(private toastr: ToastrService) {}
+ 
+  showSuccess() {
+    this.toastr.success('Hello world!', 'Toastr fun!');
+  }
+}
+
+https://www.npmjs.com/package/ngx-toastr
+
+
+
+
+
+
+
+
+
+
