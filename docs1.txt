@@ -369,9 +369,9 @@ in app.module
 create const variable in app.module with all router
 ex:
 const appRoutes: Routes = [
-	{path: '', conponent: HomeComponent},
-	{path: 'users', conponent: UsersComponent},
-	{path: 'servers', conponent: ServersComponent}
+	{path: '', component: HomeComponent},
+	{path: 'users', component: UsersComponent},
+	{path: 'servers', component: ServersComponent}
 ] 
 
 add 'Routermodule' in app.module imports key
@@ -390,7 +390,7 @@ Navigating with Router Links
 ----------------------------
 <a routerLink="/">Home</a>
 <a routerLink="/servers">Servers</a>
-<a [routerLink]="['/users']">Users</a> 
+<a [routerLink]="['/users']">Users</a> //added using property binding, can pass multiple parameter
 
 Understanding Navigation Paths
 ------------------------------
@@ -408,7 +408,7 @@ we can also use '../servers' to go one level up and then add '/servers'
 
 Styling Active router Links
 --------------------------
-<li routerLinkActive="active"><a routerLink="/">Home</a></li>
+<li routerLinkActive="active"><a routerLink="/">Home</a></li> //added We can apply routerLinkActive to <a> tag also 
 <li routerLinkActive="active"><a routerLink="/servers">Servers</a></li> 
 
 this will apply active class to selected router link
@@ -441,24 +441,23 @@ To get Currently activated route in component
 import {ActivatedRoute} from '@angular/router';
 
 Inject in constructor
-
 constructor(private router: Router, private route:ActivatedRoute){
 
 } 
 
 onReload(){
-    this.router.navigate(['server'], {relativeTo: this.route});
-} 
+    this.router.navigate(['servers'], {relativeTo: this.route});
+}
+//added By default relativeTo is root element
 
 Passing Parameters to Routes
 ---------------------------
-
 In app.module use
 const appRoutes: Routes = [
-	{path: '', conponent: HomeComponent},
-	{path: 'users', conponent: UsersComponent},
-	{path: 'users/:id', conponent: UserComponent},
-	{path: 'servers', conponent: ServersComponent}
+	{path: '', component: HomeComponent},
+	{path: 'users', component: UsersComponent},
+	{path: 'users/:id', component: UserComponent},
+	{path: 'servers', component: ServersComponent}
 ] 
 
 here :id means some dynamic value will come here 
@@ -475,22 +474,23 @@ export class UserComponent implements onInit{
 
 	ngOnInit(){
 		this.user = {
-						id: this.route.snapshot.params['id'],
-						name: this.route.snapshot.params['name']
+			id: this.route.snapshot.params['id'],
+			name: this.route.snapshot.params['name']
 		}
 	}
 } 
 
 Fetching Route Parameters reactively
 -----------------------------------
-
 <p>User with id {{user.id}}</p>
 <p>User name is {{user.name}}</p> 
 
 <a [routerLink] = "['/users', 10, 'Anna']">Load Anna (10)</a> 
 
-If we are on user component and click on above link, nativagation path will chnages on browser address bar but component will not reload as we are on same component
+If we are on user component and click on above link, nativagation path will changes on browser address bar but component will not reload as we are on same component
 angular does not reload component if routerLink point to same component to resolve this we have to add observable in ngOnInit
+
+import {ActivatedRoute, Params} from '@angular/router';
 
 ngOnInit(){
 	this.user = {
@@ -500,23 +500,69 @@ ngOnInit(){
 
 	this.route.params
 		.subscribe(
-						(params: Params) => {
-										this.user.id = params['id'];
-										this.user.name = params['name']
-						}
+			(params: Params) => {
+				this.user.id = params['id'];
+				this.user.name = params['name'];
+			}
 		);
 } 
 
 here this.route.params is observable
  
+ 
+An Important Note about Route Observables
+-------------------------------------
+import { Subscription } from 'rxjs/Subscription';
+
+paramsSubscription: Subscription;
+
+ngOnInit() {
+    this.user = {
+      id: this.route.snapshot.params['id'],
+      name: this.route.snapshot.params['name']
+    };
+    this.paramsSubscription = this.route.params
+      .subscribe(
+        (params: Params) => {
+          this.user.id = params['id'];
+          this.user.name = params['name'];
+        }
+      );
+}
+  
+ngOnDestroy() {
+   this.paramsSubscription.unsubscribe();
+}
+
 
 Passing Query Parameters and Fragments
 -------------------------------------
 Ex:
 In app.module use
 const appRoutes: Routes = [
-    {path: 'servers/:id/edit', conponent: EditServerComponent}
-] 
+    {path: 'servers/:id/edit', component: EditServerComponent}
+]
+
+<div class="list-group">
+  <a
+	[routerLink]="['/servers', server.id]"
+	[queryParams]="{allowEdit: server.id === 3 ? '1' : '0'}"
+	fragment="loading"
+	href="#"
+	class="list-group-item"
+	*ngFor="let server of servers">
+	{{ server.name }}
+  </a>
+</div>
+
+From typescript code
+this.route.navigate(['/servers', id, 'edit'], {
+	queryParams: {
+		allowEdit: '1'
+	},
+	fragment: 'loading'
+});
+
 
 Passing query params from template
 ---------------------------------
@@ -533,7 +579,7 @@ Passing queryParams from programatically
 onLoadServer(id:number){
 	this.route.navigate(['/server', id, 'edit'], {
 		queryParams: {
-						allowEdit: 1
+			allowEdit: 1
 		},
 		fragment: 'loading'
 	});
@@ -542,26 +588,43 @@ onLoadServer(id:number){
 Retrieving Query Parameters and Fragments
 ----------------------------------------
 constructor(private route: ActivatedRoute){
+	
+}
+
+ngOnInit(){
 	console.log(this.route.snapshot.queryParams);
 	console.log(this.route.snapshot.fragment);               
 
 	this.route.queryParams.subscribe();
-	this.route.fragment,subscribe();
-} 
+	this.route.fragment.subscribe();
+}
+
+
+Practicing and some Common Gotchas
+--------------------------------
+this.route.snapshot.params
+
+this.route.params
+	.subscribe(
+		(params: Params) => {
+			this.server = this.serversService.getServer(params[id]);
+		}
+	)
 
 Note: params['id'] allways return string 
+We can convert number to string by adding '+' in front of it.
 
 Setting up child(Nested) routes
 ------------------------------
 In app.module use
 const appRoutes: Routes = [
-	{path: '', conponent: HomeComponent},
-	{path: 'users', conponent: UsersComponent, children: [
-		{path: ':id', conponent: UserComponent}
+	{path: '', component: HomeComponent},
+	{path: 'users', component: UsersComponent, children: [
+		{path: ':id', component: UserComponent}
 	]},
-	{path: 'servers', conponent: ServersComponent, children: [
-		{path: ':id', conponent: ServerComponent},
-		{path: ':id/edit', conponent: EditServerComponent}
+	{path: 'servers', component: ServersComponent, children: [
+		{path: ':id', component: ServerComponent},
+		{path: ':id/edit', component: EditServerComponent}
 	]}
 ] 
 
@@ -591,7 +654,7 @@ const appRoutes: Routes = [
 					{path: ':id', conponent: ServerComponent},
 					{path: ':id/edit', conponent: EditServerComponent}
 	]},
-	{path: 'not-found', compoment: PageNotFoundComponent},
+	{path: 'not-found', component: PageNotFoundComponent},
 	{path: 'something', redirectTo: '/not-found'}
 ] 
 
@@ -603,29 +666,43 @@ Outsourcing the Route Configuration
 ----------------------------------
 If there are lots of path we can create new module for routing.
 Ex:
+import {NgModule} from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+
 const appRoutes: Routes = [
-	{path: '', conponent: HomeComponent},
-	{path: 'servers', conponent: ServersComponent, children: [
-					{path: ':id', conponent: ServerComponent},
-					{path: ':id/edit', conponent: EditServerComponent}
+	{path: '', component: HomeComponent},
+	{path: 'servers', component: ServersComponent, children: [
+					{path: ':id', component: ServerComponent},
+					{path: ':id/edit', component: EditServerComponent}
 	]},
-	{path: 'not-found', compoment: PageNotFoundComponent},
+	{path: 'not-found', component: PageNotFoundComponent},
 	{path: 'something', redirectTo: '/not-found'}
 ] 
 
 @ngModule({
 	imports: [
-		RouterModule.forRoot(appRoutes),
-		exports: [RouterModule]
-	]
+		RouterModule.forRoot(appRoutes)		
+	],
+	exports: [RouterModule]
 })
-
 export class AppRoutingModule{               
 
-} 
+}
+
+In app module import AppRoutingModule.
+
+import { AppRoutingModule } from './app-routing.module';
+
+imports: [    
+    AppRoutingModule
+]
+
+
+//No need to redeclear component, as the are already decleared in app module. Declearing here will give error.
 
 exports means that if some other module import this module what all will be accessible to module.
-In app module now import AppRoutingModule 
+In app module now import AppRoutingModule
+
 
 Protecting Routes with canActivate
 ---------------------------------
@@ -650,9 +727,9 @@ export class AuthGuard implement canActivate{
 			.then(
 				(authenticated: boolean) => {
 					if(authenticated){
-									return true;
+						return true;
 					}else {
-									this.route.navigate(['/']);
+						this.route.navigate(['/']);
 					}
 				}
 			);
@@ -662,10 +739,10 @@ here AuthService is again service that is internally used by AuthGuard to check 
 
 In AppRoutingModule below update is done for authentication.
 const appRoutes: Routes = [
-	{path: '', conponent: HomeComponent},
-	{path: 'servers', conponent: ServersComponent, canActivate:[AuthGuard] children: [
-					{path: ':id', conponent: ServerComponent},
-					{path: ':id/edit', conponent: EditServerComponent}
+	{path: '', component: HomeComponent},
+	{path: 'servers', component: ServersComponent, canActivate:[AuthGuard] children: [
+					{path: ':id', component: ServerComponent},
+					{path: ':id/edit', component: EditServerComponent}
 	]},
 	{path: 'not-found', compoment: PageNotFoundComponent},
 	{path: 'something', redirectTo: '/not-found'}
@@ -684,7 +761,7 @@ ex:
 import {Observable} from 'rxjs/Observable';
 import {canDeactivate, ActivatedRouteSnapshot, RouterStateSnapshot} from '@angular/route';
 
-export imterface CanComponentDeactivated {
+export interface CanComponentDeactivated {
 	canDeactivate: () => Observable<boolean> | Promise<boolean> | boolean
 }
 
@@ -703,10 +780,10 @@ here in CanDeactivate<CanComponentDeactivate> passing component that is implemen
 
 We are calling canDeactivate method of service as well as of compoment.
 const appRoutes: Routes = [
-	{path: '', conponent: HomeComponent},
-	{path: 'servers', conponent: ServersComponent, canActivate:[AuthGuard] children: [
-		{path: ':id', conponent: ServerComponent},
-		{path: ':id/edit', conponent: EditServerComponent, canDeactivate: [canDeactivateGuard]}
+	{path: '', component: HomeComponent},
+	{path: 'servers', component: ServersComponent, canActivate:[AuthGuard] children: [
+		{path: ':id', component: ServerComponent},
+		{path: ':id/edit', component: EditServerComponent, canDeactivate: [canDeactivateGuard]}
 	]},
 	{path: 'not-found', compoment: PageNotFoundComponent},
 	{path: 'something', redirectTo: '/not-found'}
@@ -1679,3 +1756,16 @@ provides: [{
 
 Authentication & Route Protection in Angular
 -------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
