@@ -15,6 +15,10 @@ Project set-up
 npm install --save bootstrap@3
 node_modules/bootstrap/dist/css/bootstrap.min.css
 
+Add Table in html
+----------------
+https://atom-morgan.github.io/how-to-mock-an-api-in-angular/
+
 Add ag-grid
 ----------------------
 npm install --save ag-grid-community ag-grid-angular
