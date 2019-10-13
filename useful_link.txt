@@ -1,3 +1,14 @@
+Project set-up
+-------------
+1) Download and install node
+2) npm install -g @angular/cli@latest
+3) Navigate to directory where project will created
+4) ng new my-first-app
+5) on routing enter N
+6) On style press enter, css is default value
+7) navigate to project folder
+8) ng serve
+
 
 //Add bootstrap
 ----------------------
